@@ -43,7 +43,7 @@ class Description:
         exit(1) 
     
     def toJSON(self):
-        return json.dumps(self, indent=4)
+        return self.__dict__ 
 
 
 class DescriptionEncoder(json.JSONEncoder):
@@ -85,10 +85,20 @@ client = pymongo.MongoClient(db_url)
 db = client.public_api_data_db
 collection = db.categories
 
-print("Inserting all categories")
-collection.insert_one({"categories": list(categories.keys())})
+if collection.count_documents({}) == 0:
+    print("Inserting all categories")
+    collection.insert_one({"categories": list(categories.keys())})
 
 for key, value in categories.items():
-    collection = key.replace(" & ", "_").replace(" ", "_").lower()
-    db.collection.insert_one({"data": value})
+    collection_name = key.replace(" & ", "_").replace(" ", "_").lower()
+    collection = db[collection_name]
+    if collection.count_documents({}) != 0:
+        continue
+
+    data: list[str] = []
+    for d in value:
+        data.append(d.toJSON())
+    
+    print(f"Inserting data for {key}")
+    collection.insert_one({"data": data})
 
