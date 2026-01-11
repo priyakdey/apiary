@@ -87,7 +87,12 @@ collection = db.categories
 
 if collection.count_documents({}) == 0:
     print("Inserting all categories")
-    collection.insert_one({"categories": list(categories.keys())})
+    foo: list[dict[str, str]] = [] 
+    for key in categories.keys():
+        collection_name = key.replace(" & ", "_").replace(" ", "_").lower()
+        foo.append({"key": collection_name, "value": key})
+
+    collection.insert_one({"categories": list(foo)})
 
 for key, value in categories.items():
     collection_name = key.replace(" & ", "_").replace(" ", "_").lower()
