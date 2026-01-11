@@ -1,20 +1,32 @@
-from fastapi import FastAPI, Response
+from dataclasses import dataclass
+
+from fastapi import FastAPI, Request, Response
 import pymongo
+
 
 server = FastAPI()
 
 PAGE_SIZE = 5
 
+@dataclass
+class Token:
+    exp: int
+    
+    def generate(key: bytearray):
+
+    
+# TODO: memory leak
 async def get_collection(name: str):
-    # TODO: this is super shit but only from design!!
-    # Pymongo does pooling under the hood by default...
-    # can we only fetch the reqd dataset by doing some magic?
     client = pymongo.MongoClient("mongodb://root:password@localhost:27017")
     db = client["public_api_data_db"]
     if name not in db.list_collection_names():
         return None
     
     return db[name]
+
+@server.get("/api/v1/auth/token")
+async def get(request: Request):
+    return {"req": [request.client.host, request.client.port]} 
 
 # TODO: group the routes together
 @server.get("/api/v1/categories")
